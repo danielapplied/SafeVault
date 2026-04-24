@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Secure User Form</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+        }
+
+        form {
+            max-width: 400px;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            margin: 6px 0 15px 0;
+        }
+
+        button {
+            padding: 10px 15px;
+            background-color: #2d6cdf;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #1b4fb8;
+        }
+    </style>
+</head>
+
+<body>
+
+<h2>Secure Registration Form</h2>
+
+<form action="/submit" method="post">
+
+    <!-- Username -->
+    <label for="username">Username:</label>
+    <input 
+        type="text"
+        id="username"
+        name="username"
+        required
+        minlength="3"
+        maxlength="50"
+        pattern="^[a-zA-Z0-9_\\s]+$"
+        title="Only letters, numbers, spaces, and underscores allowed"
+        autocomplete="off"
+    >
+
+    <!-- Email -->
+    <label for="email">Email:</label>
+    <input 
+        type="email"
+        id="email"
+        name="email"
+        required
+        maxlength="100"
+        autocomplete="off"
+    >
+
+    <!-- Client-side security warning -->
+    <p style="font-size: 12px; color: gray;">
+        Note: Malicious input is blocked using validation rules. Server-side validation is also applied for security.
+    </p>
+
+    <button type="submit">Submit</button>
+
+</form>
+
+</body>
+</html>
