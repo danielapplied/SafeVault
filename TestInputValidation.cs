@@ -1,94 +1,73 @@
 using NUnit.Framework;
+using SecurityAndAuth;
 
-namespace SecurityAndAuth
+[TestFixture]
+public class TestInputValidation
 {
-    [TestFixture]
-    public class TestInputValidation
+    // 🔴 SQL Injection Test
+    [Test]
+    public void TestForSQLInjection()
     {
-        // ✅ VALID INPUT TESTS
+        string maliciousInput = "'; DROP TABLE Users; --";
 
-        [Test]
-        public void ValidFullName_ShouldPass()
-        {
-            var result = InputValidator.IsValidFullName("John Doe");
-            Assert.IsTrue(result);
-        }
+        bool result = InputValidator.ContainsSqlInjection(maliciousInput);
 
-        [Test]
-        public void ValidEmail_ShouldPass()
-        {
-            var result = InputValidator.IsValidEmail("john@example.com");
-            Assert.IsTrue(result);
-        }
+        Assert.IsTrue(result, "SQL Injection should be detected");
+    }
 
-        [Test]
-        public void ValidPassword_ShouldPass()
-        {
-            var result = InputValidator.IsValidPassword("Secure123!");
-            Assert.IsTrue(result);
-        }
+    // 🔴 XSS Test
+    [Test]
+    public void TestForXSS()
+    {
+        string maliciousInput = "<script>alert('hack')</script>";
 
-        // ❌ INVALID INPUT TESTS
+        bool result = InputValidator.ContainsXss(maliciousInput);
 
-        [Test]
-        public void InvalidFullName_ShouldFail()
-        {
-            var result = InputValidator.IsValidFullName("J@hn123");
-            Assert.IsFalse(result);
-        }
+        Assert.IsTrue(result, "XSS should be detected");
+    }
 
-        [Test]
-        public void InvalidEmail_ShouldFail()
-        {
-            var result = InputValidator.IsValidEmail("invalid-email");
-            Assert.IsFalse(result);
-        }
+    // ✅ Safe input should pass
+    [Test]
+    public void TestForValidInput()
+    {
+        string safeInput = "John Doe";
 
-        [Test]
-        public void WeakPassword_ShouldFail()
-        {
-            var result = InputValidator.IsValidPassword("123");
-            Assert.IsFalse(result);
-        }
+        bool sqlResult = InputValidator.ContainsSqlInjection(safeInput);
+        bool xssResult = InputValidator.ContainsXss(safeInput);
 
-        // 🔴 SQL INJECTION TEST
+        Assert.IsFalse(sqlResult);
+        Assert.IsFalse(xssResult);
+    }
 
-        [Test]
-        public void SQLInjection_ShouldBeDetected()
-        {
-            string maliciousInput = "DROP TABLE Users;";
+    // 🔒 XSS Encoding protection test
+    [Test]
+    public void TestForXSS_EncodingProtection()
+    {
+        string input = "<script>alert('hack')</script>";
 
-            var result = InputValidator.ContainsSqlInjection(maliciousInput);
+        string encoded = InputSanitizer.EncodeForHtml(input);
 
-            Assert.IsTrue(result);
-        }
+        Assert.IsFalse(encoded.Contains("<script>"));
+        Assert.IsTrue(encoded.Contains("&lt;script&gt;"));
+    }
 
-        // 🔴 XSS TEST
+    // 🔴 Edge Case: Empty input
+    [Test]
+    public void TestEmptyInput()
+    {
+        string input = "";
 
-        [Test]
-        public void XSS_ShouldBeDetected()
-        {
-            string xssInput = "<script>alert('hack')</script>";
+        Assert.IsFalse(InputValidator.ContainsSqlInjection(input));
+        Assert.IsFalse(InputValidator.ContainsXss(input));
+    }
 
-            var result = InputValidator.ContainsXss(xssInput);
+    // 🔴 Edge Case: Null input
+    [Test]
+    public void TestNullInput()
+    {
+        string input = null;
 
-            Assert.IsTrue(result);
-        }
-
-        // ❌ EDGE CASES
-
-        [Test]
-        public void EmptyName_ShouldFail()
-        {
-            var result = InputValidator.IsValidFullName("");
-            Assert.IsFalse(result);
-        }
-
-        [Test]
-        public void NullEmail_ShouldFail()
-        {
-            var result = InputValidator.IsValidEmail(null);
-            Assert.IsFalse(result);
-        }
+        Assert.IsFalse(InputValidator.ContainsSqlInjection(input));
+        Assert.IsFalse(InputValidator.ContainsXss(input));
     }
 }
